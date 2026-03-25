@@ -2,8 +2,8 @@ close all; clear all;
 
 plot = figure("inverthardcopy", "off");
 
-low_index = 1;
-high_index = 229;
+low_index = 4;
+high_index = 5;
 
 directory_range = low_index:high_index;
 colors = [[0,0,0];[1,0,0];[0,0,1];[0,0.85,0];[136/255,46/255,114/255]; ...

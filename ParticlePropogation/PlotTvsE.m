@@ -6,7 +6,7 @@ clear; clc; close all;
 % This assumes there is a folder named 'output' in the same directory
 % as this script, and inside 'output', there is a file '3_output.dat'.
 % --- IMPORTANT: You can change this path to match your file ---
-data_file_path = 'output/400_output.dat';
+data_file_path = 'output/4_output.dat';
 
 % Check if the file exists before trying to load it.
 if exist(data_file_path, 'file')
