@@ -146,6 +146,9 @@ void propagate(particle p, int current_run_number, spacecraft s) {
   // printf("printed intial line to output file\n");
 
   #ifdef ENABLE_BFIELD
+  p_array[0].bubbleSwitch = temp;
+  p_array[0].straggle_switch = straggle;
+  p_array[0].run_status = true;
   //create output file for magnetic field logging if enabled
   char bfield_out_name[256];  // Assuming the file name won't be longer than 255 characters
   snprintf(bfield_out_name, sizeof(bfield_out_name), "./output/%d_bfield_output.dat", current_run_number);
@@ -158,6 +161,9 @@ void propagate(particle p, int current_run_number, spacecraft s) {
   }
   // printf("Opened bfield output file successfully\n");
 
+  p_array[0].bubbleSwitch = temp;
+  p_array[0].straggle_switch = straggle;
+  p_array[0].run_status = true;
   fprintf(bfieldout,"       time             b_x              b_y              b_z              F_x              F_y              F_z\n");
   #endif // END ENABLE_BFIELD
   // printf("Got past bfield output in run\n");
@@ -175,7 +181,10 @@ void propagate(particle p, int current_run_number, spacecraft s) {
   logParticle(ptfileout, p, 0.0);
   for (p.t = 0.0; p.t < p.tmax; p.t += p.dt){
 
-    // printf("run_status: %d\n",p.run_status);
+    // printf("run_status: %d\n",p.ru
+  p_array[0].bubbleSwitch = temp;
+  p_array[0].straggle_switch = straggle;
+  p_array[0].run_status = true;n_status);
     if (!checkbounds(p,s) || !p.run_status) {
       break; //end current run
     }
