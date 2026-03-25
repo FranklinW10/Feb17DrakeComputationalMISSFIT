@@ -193,7 +193,7 @@ void propagate(particle p, int current_run_number, spacecraft s) {
     if (InBubble(p, s)){
       if (!prev_inside_bubble && p.bubbleSwitch){
         original_stepout = p.stepout;
-        p.stepout=1; //change stepout for more analysis
+        p.stepout=1; //change  tepout for more analysis
       }
       if (!prev_inside_bubble) printf("\nParticle has entered the bubble.\n");
       prev_inside_bubble = true;
@@ -223,10 +223,26 @@ void propagate(particle p, int current_run_number, spacecraft s) {
       // printf("stepeloss: %12.6e \n",stepeloss);
       p.totaleloss += stepeloss;//in Joules
       // printf("total Eloss post synch: %12.6e %12.6e %12.6e \n%12.6e\n",energy_lost.x,energy_lost.y,energy_lost.z,stepeloss);
-      //calculate forces on particle
+      // ORIGINAL (commented): previous implementation added energy_lost directly to forces
+      /*
+      // calculate forces on particle
       p.Fx = (p.charge * AU2Coul * ((p.vy * magneticField.z)-(p.vz * magneticField.y))) + energy_lost.x;
       p.Fy = (p.charge * AU2Coul * ((p.vz * magneticField.x)-(p.vx * magneticField.z))) + energy_lost.y;
       p.Fz = (p.charge * AU2Coul * ((p.vx * magneticField.y)-(p.vy * magneticField.x))) + energy_lost.z;
+      */
+      // calculate forces on particle (current: convert step energy to force by dividing by p.dr)
+      double lorentz_x = (p.charge * AU2Coul * ((p.vy * magneticField.z)-(p.vz * magneticField.y)));
+      double lorentz_y = (p.charge * AU2Coul * ((p.vz * magneticField.x)-(p.vx * magneticField.z)));
+      double lorentz_z = (p.charge * AU2Coul * ((p.vx * magneticField.y)-(p.vy * magneticField.x)));
+      double force_x = 0.0, force_y = 0.0, force_z = 0.0;
+      if (p.dr > 0.0) {
+        force_x = energy_lost.x / p.dr;
+        force_y = energy_lost.y / p.dr;
+        force_z = energy_lost.z / p.dr;
+      }
+      p.Fx = lorentz_x + force_x;
+      p.Fy = lorentz_y + force_y;
+      p.Fz = lorentz_z + force_z;
       // printf("FORCE: %12.6e %12.6e %12.6e\n",p.Fx,p.Fy,p.Fz);
       p.elosstotaldist += p.dr;
     } else {
@@ -238,11 +254,23 @@ void propagate(particle p, int current_run_number, spacecraft s) {
       prev_inside_bubble = false;
       // do free propagation
       magneticField = MagField(p, s);
-      vector energy_lost = synchrotron(p, magneticField);
-      //calculate forces on particle (no energy loss)
-      p.Fx = (p.charge * AU2Coul * ((p.vy * magneticField.z)-(p.vz * magneticField.y))) + energy_lost.x * p.dr;
-      p.Fy = (p.charge * AU2Coul * ((p.vz * magneticField.x)-(p.vx * magneticField.z))) + energy_lost.y * p.dr;
-      p.Fz = (p.charge * AU2Coul * ((p.vx * magneticField.y)-(p.vy * magneticField.x))) + energy_lost.z * p.dr;
+  vector energy_lost = synchrotron(p, magneticField);
+  // ORIGINAL (commented): previous implementation multiplied synchrotron by p.dr before adding
+  /*
+  vector energy_lost = synchrotron(p, magneticField);
+  p.Fx = (p.charge * AU2Coul * ((p.vy * magneticField.z)-(p.vz * magneticField.y))) + energy_lost.x * p.dr;
+  p.Fy = (p.charge * AU2Coul * ((p.vz * magneticField.x)-(p.vx * magneticField.z))) + energy_lost.y * p.dr;
+  p.Fz = (p.charge * AU2Coul * ((p.vx * magneticField.y)-(p.vy * magneticField.x))) + energy_lost.z * p.dr;
+  */
+  // calculate forces on particle (no energy loss other than synchrotron)
+  // here energy_lost returned by synchrotron() is energy-per-length (J/m)
+  double lorentz_x_free = (p.charge * AU2Coul * ((p.vy * magneticField.z)-(p.vz * magneticField.y)));
+  double lorentz_y_free = (p.charge * AU2Coul * ((p.vz * magneticField.x)-(p.vx * magneticField.z)));
+  double lorentz_z_free = (p.charge * AU2Coul * ((p.vx * magneticField.y)-(p.vy * magneticField.x)));
+  // convert energy-per-length to force (J/m) -> N by using it directly
+  p.Fx = lorentz_x_free + energy_lost.x;
+  p.Fy = lorentz_y_free + energy_lost.y;
+  p.Fz = lorentz_z_free + energy_lost.z;
       // printf("ELOSS %12.6e %12.6e %12.6e\n",energy_lost.x,energy_lost.y,energy_lost.z);
       // printf("FORCE: %12.6e %12.6e %12.6e\n",p.Fx,p.Fy,p.Fz);
 
